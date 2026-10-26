@@ -5,26 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CotadorPro - Planos de Saúde</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Fonte Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Inter', sans-serif; }
 
-        /* ✅ CORREÇÃO 1: Keyframes que faltavam para as animações Tailwind arbitrary */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
 
-        /* ✅ CORREÇÃO 2: Impressão não corta conteúdo */
         @media print {
             body { background-color: white !important; }
             * {
@@ -38,11 +34,8 @@
         }
     </style>
 
-    <!-- Bibliotecas React e ReactDOM via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- Babel para compilar o JSX direto no navegador -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-[#F8FAFC]">
@@ -50,10 +43,9 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // ✅ CORREÇÃO 4: Adicionado useRef
         const { useState, useMemo, useEffect, useRef } = React;
 
-        // --- ÍCONES (Substituindo a biblioteca lucide-react para arquivo único) ---
+        // --- ÍCONES ---
         const Icon = ({ children, className = "w-5 h-5", ...props }) => (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>
                 {children}
@@ -88,6 +80,9 @@
         const Upload = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></Icon>;
         const Edit = (p) => <Icon {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></Icon>;
         const Trash2 = (p) => <Icon {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></Icon>;
+        const AlertTriangle = (p) => <Icon {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Icon>;
+        const LogOut = (p) => <Icon {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>;
+        const Settings = (p) => <Icon {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></Icon>;
 
         // --- MOCK DATA ---
         const AGE_BRACKETS = [
@@ -96,77 +91,337 @@
         ];
 
         const MOCK_PLANS = [
-            {
-                id: 'p1', operator: 'Hapvida', name: 'Nosso Médico RMSP', accommodation: 'Enfermaria',
-                copay: 'Com Coparticipação Parcial', network: 'Rede Própria', refund: 'Sem Reembolso',
-                prices: { '0-18': 154.90, '19-23': 185.88, '24-28': 223.05, '29-33': 267.66, '34-38': 321.20, '39-43': 385.44, '44-48': 462.52, '49-53': 555.03, '54-58': 666.03, '59+': 932.44 }
-            },
-            {
-                id: 'p2', operator: 'Hapvida', name: 'Mix', accommodation: 'Apartamento',
-                copay: 'Sem Coparticipação', network: 'Rede Ampla', refund: 'Sem Reembolso',
-                prices: { '0-18': 210.50, '19-23': 252.60, '24-28': 303.12, '29-33': 363.74, '34-38': 436.49, '39-43': 523.79, '44-48': 628.55, '49-53': 754.26, '54-58': 905.11, '59+': 1267.15 }
-            },
-            {
-                id: 'p3', operator: 'NotreDame', name: 'Smart 200 SP', accommodation: 'Enfermaria',
-                copay: 'Com Coparticipação Total', network: 'Rede Própria', refund: 'Sem Reembolso',
-                prices: { '0-18': 165.00, '19-23': 198.00, '24-28': 237.60, '29-33': 285.12, '34-38': 342.14, '39-43': 410.57, '44-48': 492.68, '49-53': 591.22, '54-58': 709.46, '59+': 993.24 }
-            },
-            {
-                id: 'p4', operator: 'NotreDame', name: 'Advance 600', accommodation: 'Apartamento',
-                copay: 'Sem Coparticipação', network: 'Rede Nacional', refund: 'Reembolso Padrão',
-                prices: { '0-18': 350.00, '19-23': 420.00, '24-28': 504.00, '29-33': 604.80, '34-38': 725.76, '39-43': 870.91, '44-48': 1045.09, '49-53': 1254.11, '54-58': 1504.93, '59+': 2106.90 }
-            }
+            { id: 'p1', operator: 'Hapvida', name: 'Nosso Médico RMSP', accommodation: 'Enfermaria', copay: 'Com Coparticipação Parcial', network: 'Rede Própria', refund: 'Sem Reembolso', prices: { '0-18': 154.90, '19-23': 185.88, '24-28': 223.05, '29-33': 267.66, '34-38': 321.20, '39-43': 385.44, '44-48': 462.52, '49-53': 555.03, '54-58': 666.03, '59+': 932.44 } },
+            { id: 'p2', operator: 'Hapvida', name: 'Mix', accommodation: 'Apartamento', copay: 'Sem Coparticipação', network: 'Rede Ampla', refund: 'Sem Reembolso', prices: { '0-18': 210.50, '19-23': 252.60, '24-28': 303.12, '29-33': 363.74, '34-38': 436.49, '39-43': 523.79, '44-48': 628.55, '49-53': 754.26, '54-58': 905.11, '59+': 1267.15 } },
+            { id: 'p3', operator: 'NotreDame', name: 'Smart 200 SP', accommodation: 'Enfermaria', copay: 'Com Coparticipação Total', network: 'Rede Própria', refund: 'Sem Reembolso', prices: { '0-18': 165.00, '19-23': 198.00, '24-28': 237.60, '29-33': 285.12, '34-38': 342.14, '39-43': 410.57, '44-48': 492.68, '49-53': 591.22, '54-58': 709.46, '59+': 993.24 } },
+            { id: 'p4', operator: 'NotreDame', name: 'Advance 600', accommodation: 'Apartamento', copay: 'Sem Coparticipação', network: 'Rede Nacional', refund: 'Reembolso Padrão', prices: { '0-18': 350.00, '19-23': 420.00, '24-28': 504.00, '29-33': 604.80, '34-38': 725.76, '39-43': 870.91, '44-48': 1045.09, '49-53': 1254.11, '54-58': 1504.93, '59+': 2106.90 } }
         ];
 
         const RECENT_QUOTES = [
-            { id: 1, type: 'PME', client: 'Tech Solutions LTDA', location: 'São Paulo/SP', date: 'Hoje, 10:45', value: 'R$ 2.450,00' },
-            { id: 2, type: 'PF', client: 'Maria Silva', location: 'Campinas/SP', date: 'Hoje, 09:12', value: 'R$ 540,00' },
-            { id: 3, type: 'Adesão', client: 'João Souza (CREA)', location: 'Belo Horizonte/MG', date: 'Ontem, 16:30', value: 'R$ 890,00' },
+            { id: 1, type: 'PME', client: 'Tech Solutions LTDA', location: 'São Paulo/SP', date: 'Hoje, 10:45', value: 'R$ 2.450,00', plans: 2 },
+            { id: 2, type: 'PF', client: 'Maria Silva', location: 'Campinas/SP', date: 'Hoje, 09:12', value: 'R$ 540,00', plans: 3 },
+            { id: 3, type: 'Adesão', client: 'João Souza (CREA)', location: 'Belo Horizonte/MG', date: 'Ontem, 16:30', value: 'R$ 890,00', plans: 1 },
         ];
+
+        // --- TOAST COMPONENT ---
+        function Toast({ message, type = 'success', onClose }) {
+            useEffect(() => {
+                const t = setTimeout(onClose, 3500);
+                return () => clearTimeout(t);
+            }, []);
+            const styles = {
+                success: 'bg-emerald-600 text-white',
+                error: 'bg-red-600 text-white',
+                info: 'bg-[#006B6C] text-white',
+                warning: 'bg-orange-500 text-white',
+            };
+            return (
+                <div className="fixed bottom-6 right-6 z-[100] animate-[slideIn_0.3s_ease-out]">
+                    <div className={`${styles[type]} px-5 py-3 rounded-lg shadow-2xl flex items-center gap-3 min-w-[280px] max-w-md`}>
+                        <span className="shrink-0">
+                            {type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : type === 'error' ? <X className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
+                        </span>
+                        <p className="text-sm font-medium flex-1">{message}</p>
+                        <button onClick={onClose} className="opacity-70 hover:opacity-100 transition-opacity">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- MODAL BASE ---
+        function Modal({ title, children, onClose, size = 'md' }) {
+            useEffect(() => {
+                const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
+                window.addEventListener('keydown', handleEsc);
+                return () => window.removeEventListener('keydown', handleEsc);
+            }, []);
+
+            const sizes = { sm: 'max-w-md', md: 'max-w-2xl', lg: 'max-w-4xl' };
+
+            return (
+                <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]">
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose}></div>
+                    <div className={`relative bg-white rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] flex flex-col animate-[scaleIn_0.2s_ease-out]`}>
+                        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+                            <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+                            <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- DROPDOWN ---
+        function Dropdown({ trigger, children }) {
+            const [open, setOpen] = useState(false);
+            return (
+                <div className="relative">
+                    <button onClick={() => setOpen(!open)} className="block">
+                        {trigger}
+                    </button>
+                    {open && (
+                        <>
+                            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)}></div>
+                            <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-slate-200 z-50 animate-[slideIn_0.2s_ease-out] overflow-hidden">
+                                {children}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        // --- PLACEHOLDER VIEW ---
+        function PlaceholderView({ view, onBack }) {
+            const configs = {
+                reports: { title: 'Relatório de Cotação', desc: 'Visualize, filtre e exporte todos os relatórios de cotações realizadas.', icon: <FileText /> },
+                crm: { title: 'CRM - Clientes', desc: 'Gerencie sua base de clientes, histórico de contatos e oportunidades.', icon: <Users /> },
+                pipeline: { title: 'Pipeline de Vendas', desc: 'Acompanhe o funil de vendas e o progresso de cada negociação.', icon: <KanbanSquare /> },
+                tutorials: { title: 'Tutoriais', desc: 'Aprenda a usar todas as funcionalidades da plataforma através de vídeos.', icon: <PlayCircle /> },
+                mcp: { title: 'Conectar MCP', desc: 'Integre a plataforma a sistemas MCP externos para automatizar processos.', icon: <LinkIcon /> },
+                whatsapp: { title: 'Extensão WhatsApp', desc: 'Instale a extensão para integrar seu WhatsApp diretamente à plataforma.', icon: <MessageSquare /> },
+                clients: { title: 'Meus Clientes', desc: 'Acesse rapidamente sua carteira de clientes cadastrados.', icon: <Users /> },
+                card: { title: 'Cartão de Visita', desc: 'Gere e compartilhe seu cartão de visita digital personalizado.', icon: <UserCircle /> },
+                tasks: { title: 'Minhas Tarefas', desc: 'Gerencie suas tarefas do dia a dia e mantenha o foco no que importa.', icon: <CheckCircle2 /> },
+                chat: { title: 'Chat IA', desc: 'Converse com o assistente virtual para tirar dúvidas e agilizar tarefas.', icon: <MessageSquare /> },
+            };
+            const config = configs[view] || configs.reports;
+            return (
+                <div className="p-8 max-w-7xl mx-auto animate-[fadeIn_0.3s_ease-in-out]">
+                    <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-[#006B6C] text-sm font-medium mb-4 transition-colors">
+                        <ArrowLeft className="w-4 h-4" /> Voltar ao Início
+                    </button>
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                        <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#006B6C]">
+                            {React.cloneElement(config.icon, { className: 'w-10 h-10' })}
+                        </div>
+                        <h2 className="text-2xl font-bold text-slate-800 mb-2">{config.title}</h2>
+                        <p className="text-slate-500 max-w-md mx-auto">{config.desc}</p>
+                        <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium">
+                            <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+                            Módulo em desenvolvimento
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- PLAN MODAL (NOVO/EDITAR) ---
+        function PlanModal({ plan, onSave, onClose }) {
+            const [form, setForm] = useState(plan || {
+                operator: '', name: '', accommodation: 'Enfermaria',
+                copay: 'Sem Coparticipação', network: 'Rede Própria', refund: 'Sem Reembolso',
+                prices: AGE_BRACKETS.reduce((acc, b) => ({ ...acc, [b]: 0 }), {})
+            });
+
+            const setField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+            const setPrice = (bracket, value) => setForm(prev => ({
+                ...prev,
+                prices: { ...prev.prices, [bracket]: parseFloat(value) || 0 }
+            }));
+
+            const isValid = form.operator.trim() && form.name.trim();
+
+            return (
+                <Modal title={plan ? 'Editar Plano' : 'Novo Plano'} onClose={onClose} size="lg">
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 block mb-1">Operadora *</label>
+                                <input type="text" value={form.operator} onChange={e => setField('operator', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#006B6C]/20 focus:border-[#006B6C] outline-none" placeholder="Ex: Hapvida" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 block mb-1">Nome do Plano *</label>
+                                <input type="text" value={form.name} onChange={e => setField('name', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#006B6C]/20 focus:border-[#006B6C] outline-none" placeholder="Ex: Mix" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 block mb-1">Acomodação</label>
+                                <select value={form.accommodation} onChange={e => setField('accommodation', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#006B6C]/20 focus:border-[#006B6C] outline-none">
+                                    <option>Enfermaria</option>
+                                    <option>Apartamento</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 block mb-1">Coparticipação</label>
+                                <select value={form.copay} onChange={e => setField('copay', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#006B6C]/20 focus:border-[#006B6C] outline-none">
+                                    <option>Sem Coparticipação</option>
+                                    <option>Com Coparticipação Parcial</option>
+                                    <option>Com Coparticipação Total</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 block mb-1">Abrangência</label>
+                                <select value={form.network} onChange={e => setField('network', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#006B6C]/20 focus:border-[#006B6C] outline-none">
+                                    <option>Rede Própria</option>
+                                    <option>Rede Ampla</option>
+                                    <option>Rede Nacional</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700 block mb-1">Reembolso</label>
+                                <select value={form.refund} onChange={e => setField('refund', e.target.value)}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#006B6C]/20 focus:border-[#006B6C] outline-none">
+                                    <option>Sem Reembolso</option>
+                                    <option>Reembolso Padrão</option>
+                                    <option>Reembolso Premium</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-slate-200 pt-4">
+                            <h4 className="font-semibold text-slate-800 mb-3">Tabela de Preços por Faixa Etária</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                {AGE_BRACKETS.map(bracket => (
+                                    <div key={bracket}>
+                                        <label className="text-xs font-medium text-slate-600 block mb-1">{bracket} anos</label>
+                                        <div className="relative">
+                                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">R$</span>
+                                            <input type="number" step="0.01" min="0" value={form.prices[bracket]} onChange={e => setPrice(bracket, e.target.value)}
+                                                className="w-full pl-7 pr-2 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#006B6C]/20 focus:border-[#006B6C] outline-none" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                            <button onClick={onClose} className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors">
+                                Cancelar
+                            </button>
+                            <button onClick={() => isValid && onSave(form)} disabled={!isValid}
+                                className="px-6 py-2 bg-[#006B6C] text-white font-semibold rounded-lg hover:bg-teal-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                <Save className="w-4 h-4" />
+                                Salvar Plano
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            );
+        }
+
+        // --- CONFIRM DIALOG ---
+        function ConfirmDialog({ title, message, onConfirm, onClose, danger }) {
+            return (
+                <Modal title={title} onClose={onClose} size="sm">
+                    <div className="flex gap-3 mb-6">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${danger ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'}`}>
+                            <AlertTriangle className="w-6 h-6" />
+                        </div>
+                        <p className="text-slate-600 text-sm leading-relaxed pt-2">{message}</p>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                        <button onClick={onClose} className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+                        <button onClick={onConfirm}
+                            className={`px-6 py-2 text-white font-semibold rounded-lg transition-colors shadow-sm ${danger ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-500 hover:bg-orange-600'}`}>
+                            Confirmar
+                        </button>
+                    </div>
+                </Modal>
+            );
+        }
 
         // --- MAIN COMPONENT ---
         function CotadorApp() {
             const [currentView, setCurrentView] = useState('dashboard');
+            const [plans, setPlans] = useState(MOCK_PLANS);
+            const [toast, setToast] = useState(null);
+            const [wizardInitialType, setWizardInitialType] = useState(null);
+
+            const showToast = (message, type = 'success') => {
+                setToast({ message, type, id: Date.now() });
+            };
+
+            const navigate = (view) => setCurrentView(view);
+
+            const startQuote = (type = null) => {
+                setWizardInitialType(type);
+                setCurrentView('wizard');
+            };
+
+            // Mapa de navegação da sidebar
+            const navItems = [
+                { icon: <Home />, label: 'Início', view: 'dashboard' },
+                { icon: <FileText />, label: 'Relatório de Cotação', view: 'reports' },
+                { icon: <Users />, label: 'CRM - Clientes', view: 'crm' },
+                { icon: <KanbanSquare />, label: 'Pipeline de Vendas', view: 'pipeline' },
+                { icon: <FileSpreadsheet />, label: 'Gestão de Tabelas', view: 'tables' },
+                { icon: <PlayCircle />, label: 'Tutoriais', view: 'tutorials' },
+            ];
+
+            const integrationItems = [
+                { icon: <LinkIcon />, label: 'Conectar MCP', view: 'mcp' },
+                { icon: <MessageSquare />, label: 'Extensão WhatsApp', view: 'whatsapp' },
+            ];
 
             return (
                 <div className="flex h-screen bg-[#F8FAFC] text-slate-800 overflow-hidden">
+                    {/* TOAST */}
+                    {toast && <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+                    {/* SIDEBAR */}
                     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between print:hidden shrink-0">
                         <div>
                             <div className="p-6">
-                                <h1 className="text-2xl font-bold text-[#006B6C] flex items-center gap-2">
+                                <button onClick={() => navigate('dashboard')} className="text-2xl font-bold text-[#006B6C] flex items-center gap-2 hover:opacity-80 transition-opacity">
                                     <HeartPulse className="w-8 h-8" />
                                     CotadorPro
-                                </h1>
+                                </button>
                             </div>
                             <nav className="px-4 space-y-1">
-                                <NavItem icon={<Home />} label="Início" active={currentView === 'dashboard'} onClick={() => setCurrentView('dashboard')} />
-                                <NavItem icon={<FileText />} label="Relatório de Cotação" />
-                                <NavItem icon={<Users />} label="CRM - Clientes" />
-                                <NavItem icon={<KanbanSquare />} label="Pipeline de Vendas" />
-                                <NavItem icon={<FileSpreadsheet />} label="Gestão de Tabelas" active={currentView === 'tables'} onClick={() => setCurrentView('tables')} />
-                                <NavItem icon={<PlayCircle />} label="Tutoriais" />
+                                {navItems.map(item => (
+                                    <NavItem key={item.view} icon={item.icon} label={item.label} active={currentView === item.view} onClick={() => navigate(item.view)} />
+                                ))}
                                 <div className="pt-4 pb-2">
                                     <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Integrações</p>
                                 </div>
-                                <NavItem icon={<LinkIcon />} label="Conectar MCP" />
-                                <NavItem icon={<MessageSquare />} label="Extensão WhatsApp" />
+                                {integrationItems.map(item => (
+                                    <NavItem key={item.view} icon={item.icon} label={item.label} active={currentView === item.view} onClick={() => navigate(item.view)} />
+                                ))}
                             </nav>
                         </div>
                         
                         <div className="p-4 border-t border-slate-100">
-                            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                                <div className="w-10 h-10 rounded-full bg-[#006B6C] text-white flex items-center justify-center font-bold">
-                                    LA
+                            <Dropdown trigger={
+                                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer w-full text-left">
+                                    <div className="w-10 h-10 rounded-full bg-[#006B6C] text-white flex items-center justify-center font-bold">LA</div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-slate-900 truncate">Leonardo Aguiar</p>
+                                        <p className="text-xs text-slate-500 truncate">Consultor Premium</p>
+                                    </div>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-slate-900 truncate">Leonardo Aguiar</p>
-                                    <p className="text-xs text-slate-500 truncate">Consultor Premium</p>
+                            }>
+                                <div className="p-2 border-b border-slate-100">
+                                    <p className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase">Minha Conta</p>
+                                    <button onClick={() => showToast('Perfil aberto', 'info')} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded flex items-center gap-2">
+                                        <UserCircle className="w-4 h-4" /> Meu Perfil
+                                    </button>
+                                    <button onClick={() => showToast('Configurações abertas', 'info')} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded flex items-center gap-2">
+                                        <Settings className="w-4 h-4" /> Configurações
+                                    </button>
+                                    <button onClick={() => showToast('Sessão encerrada (demo)', 'warning')} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded flex items-center gap-2">
+                                        <LogOut className="w-4 h-4" /> Sair
+                                    </button>
                                 </div>
-                            </div>
+                            </Dropdown>
                             <div className="mt-2 text-center text-xs text-slate-400">v2.4.2</div>
                         </div>
                     </aside>
 
+                    {/* MAIN */}
                     <main className="flex-1 flex flex-col overflow-hidden">
                         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 print:hidden shrink-0">
                             <div className="flex-1 max-w-xl">
@@ -175,32 +430,92 @@
                                     <input 
                                         type="text" 
                                         placeholder="Buscar clientes, cotações ou planos..." 
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && e.target.value.trim()) {
+                                                showToast(`Busca global: "${e.target.value}"`, 'info');
+                                                e.target.value = '';
+                                            }
+                                        }}
                                         className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-lg focus:bg-white focus:border-[#006B6C] focus:ring-2 focus:ring-[#006B6C]/20 transition-all outline-none"
                                     />
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 ml-4">
-                                <button className="relative p-2 text-slate-400 hover:text-[#006B6C] transition-colors rounded-full hover:bg-slate-100">
-                                    <Bell className="w-6 h-6" />
-                                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                                </button>
-                                <button className="p-2 text-slate-400 hover:text-[#006B6C] transition-colors rounded-full hover:bg-slate-100">
-                                    <UserCircle className="w-6 h-6" />
-                                </button>
+                            <div className="flex items-center gap-2 ml-4">
+                                <Dropdown trigger={
+                                    <div className="relative p-2 text-slate-400 hover:text-[#006B6C] transition-colors rounded-full hover:bg-slate-100 cursor-pointer">
+                                        <Bell className="w-6 h-6" />
+                                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                                    </div>
+                                }>
+                                    <div className="p-2">
+                                        <p className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase">Notificações</p>
+                                        <div className="px-3 py-2 hover:bg-slate-50 rounded cursor-pointer">
+                                            <p className="text-sm font-medium text-slate-800">Nova cotação recebida</p>
+                                            <p className="text-xs text-slate-500">Há 5 minutos</p>
+                                        </div>
+                                        <div className="px-3 py-2 hover:bg-slate-50 rounded cursor-pointer">
+                                            <p className="text-sm font-medium text-slate-800">Tabela Hapvida atualizada</p>
+                                            <p className="text-xs text-slate-500">Há 2 horas</p>
+                                        </div>
+                                        <div className="px-3 py-2 hover:bg-slate-50 rounded cursor-pointer">
+                                            <p className="text-sm font-medium text-slate-800">Cliente aguardando retorno</p>
+                                            <p className="text-xs text-slate-500">Há 1 dia</p>
+                                        </div>
+                                    </div>
+                                </Dropdown>
+                                <Dropdown trigger={
+                                    <div className="p-2 text-slate-400 hover:text-[#006B6C] transition-colors rounded-full hover:bg-slate-100 cursor-pointer">
+                                        <UserCircle className="w-6 h-6" />
+                                    </div>
+                                }>
+                                    <div className="p-2">
+                                        <button onClick={() => showToast('Perfil aberto', 'info')} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded flex items-center gap-2">
+                                            <UserCircle className="w-4 h-4" /> Perfil
+                                        </button>
+                                        <button onClick={() => showToast('Configurações abertas', 'info')} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded flex items-center gap-2">
+                                            <Settings className="w-4 h-4" /> Configurações
+                                        </button>
+                                        <button onClick={() => showToast('Sessão encerrada (demo)', 'warning')} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded flex items-center gap-2">
+                                            <LogOut className="w-4 h-4" /> Sair
+                                        </button>
+                                    </div>
+                                </Dropdown>
                             </div>
                         </header>
 
                         <div className="flex-1 overflow-auto">
-                            {currentView === 'dashboard' && <DashboardView onStartQuote={() => setCurrentView('wizard')} />}
-                            {currentView === 'wizard' && <WizardView onCancel={() => setCurrentView('dashboard')} />}
-                            {currentView === 'tables' && <TablesManagementView />}
+                            {currentView === 'dashboard' && (
+                                <DashboardView 
+                                    onStartQuote={() => startQuote(null)} 
+                                    onNavigate={navigate}
+                                    showToast={showToast}
+                                />
+                            )}
+                            {currentView === 'wizard' && (
+                                <WizardView 
+                                    onCancel={() => navigate('dashboard')} 
+                                    initialType={wizardInitialType}
+                                    plans={plans}
+                                    showToast={showToast}
+                                />
+                            )}
+                            {currentView === 'tables' && (
+                                <TablesManagementView 
+                                    plans={plans} 
+                                    setPlans={setPlans} 
+                                    showToast={showToast}
+                                />
+                            )}
+                            {['reports', 'crm', 'pipeline', 'tutorials', 'mcp', 'whatsapp', 'clients', 'card', 'tasks', 'chat'].includes(currentView) && (
+                                <PlaceholderView view={currentView} onBack={() => navigate('dashboard')} />
+                            )}
                         </div>
                     </main>
                 </div>
             );
         }
 
-        // --- SUB-COMPONENTS ---
+        // --- NAV ITEM ---
         function NavItem({ icon, label, active, onClick }) {
             return (
                 <button 
@@ -217,7 +532,14 @@
             );
         }
 
-        function DashboardView({ onStartQuote }) {
+        // --- DASHBOARD ---
+        function DashboardView({ onStartQuote, onNavigate, showToast }) {
+            const [search, setSearch] = useState('');
+            const filteredQuotes = RECENT_QUOTES.filter(q =>
+                q.client.toLowerCase().includes(search.toLowerCase()) ||
+                q.location.toLowerCase().includes(search.toLowerCase())
+            );
+
             return (
                 <div className="p-8 max-w-7xl mx-auto space-y-8 animate-[fadeIn_0.3s_ease-in-out]">
                     <div className="flex items-center justify-between">
@@ -228,74 +550,105 @@
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <KpiCard title="Tarefas Hoje" value="12" subtitle="3 pendentes" icon={<CheckCircle2 />} color="blue" />
-                        <KpiCard title="Oportunidades CRM" value="8" subtitle="Novos leads" icon={<Users />} color="orange" />
-                        <KpiCard title="Cotações Efetuadas" value="4" subtitle="Hoje" icon={<FileText />} color="teal" />
+                        <KpiCard title="Tarefas Hoje" value="12" subtitle="3 pendentes" icon={<CheckCircle2 />} color="blue" onClick={() => onNavigate('tasks')} />
+                        <KpiCard title="Oportunidades CRM" value="8" subtitle="Novos leads" icon={<Users />} color="orange" onClick={() => onNavigate('crm')} />
+                        <KpiCard title="Cotações Efetuadas" value="4" subtitle="Hoje" icon={<FileText />} color="teal" onClick={() => onNavigate('reports')} />
                     </div>
 
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800 mb-4">Acesso Rápido</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <QuickActionButton icon={<HeartPulse />} label="Cotar Saúde" onClick={onStartQuote} primary />
-                            <QuickActionButton icon={<Smile />} label="Cotar Odonto" />
-                            <QuickActionButton icon={<Users />} label="Meus Clientes" />
-                            <QuickActionButton icon={<UserCircle />} label="Cartão de Visita" />
-                            <QuickActionButton icon={<CheckCircle2 />} label="Minhas Tarefas" />
-                            <QuickActionButton icon={<MessageSquare />} label="Chat IA" />
+                            <QuickActionButton icon={<HeartPulse />} label="Cotar Saúde" onClick={() => onStartQuote()} primary />
+                            <QuickActionButton icon={<Smile />} label="Cotar Odonto" onClick={() => onStartQuote('Odonto')} />
+                            <QuickActionButton icon={<Users />} label="Meus Clientes" onClick={() => onNavigate('clients')} />
+                            <QuickActionButton icon={<UserCircle />} label="Cartão de Visita" onClick={() => onNavigate('card')} />
+                            <QuickActionButton icon={<CheckCircle2 />} label="Minhas Tarefas" onClick={() => onNavigate('tasks')} />
+                            <QuickActionButton icon={<MessageSquare />} label="Chat IA" onClick={() => onNavigate('chat')} />
                         </div>
                     </div>
 
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="p-5 border-b border-slate-200 flex justify-between items-center">
+                        <div className="p-5 border-b border-slate-200 flex justify-between items-center gap-4 flex-wrap">
                             <h3 className="font-semibold text-slate-800">Últimas Cotações</h3>
-                            <button className="text-sm text-[#006B6C] hover:underline font-medium">Ver todas</button>
+                            <div className="flex gap-2 items-center">
+                                <div className="relative">
+                                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <input 
+                                        type="text"
+                                        placeholder="Filtrar..."
+                                        value={search}
+                                        onChange={e => setSearch(e.target.value)}
+                                        className="pl-8 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:ring-1 focus:ring-[#006B6C] focus:border-[#006B6C] outline-none"
+                                    />
+                                </div>
+                                <button 
+                                    onClick={() => onNavigate('reports')}
+                                    className="text-sm text-[#006B6C] hover:underline font-medium whitespace-nowrap"
+                                >
+                                    Ver todas
+                                </button>
+                            </div>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                                        <th className="p-4 font-medium">Tipo</th>
-                                        <th className="p-4 font-medium">Cliente</th>
-                                        <th className="p-4 font-medium">Localização</th>
-                                        <th className="p-4 font-medium">Data</th>
-                                        <th className="p-4 font-medium">Valor Estimado</th>
-                                        <th className="p-4 font-medium"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 text-sm">
-                                    {RECENT_QUOTES.map((quote) => (
-                                        <tr key={quote.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="p-4">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#006B6C]/10 text-[#006B6C]">
-                                                    {quote.type}
-                                                </span>
-                                            </td>
-                                            <td className="p-4 font-medium text-slate-800">{quote.client}</td>
-                                            <td className="p-4 text-slate-500">{quote.location}</td>
-                                            <td className="p-4 text-slate-500">{quote.date}</td>
-                                            <td className="p-4 font-semibold text-slate-700">{quote.value}</td>
-                                            <td className="p-4 text-right">
-                                                <button className="text-slate-400 hover:text-[#006B6C]">Ver detalhes</button>
-                                            </td>
+                            {filteredQuotes.length === 0 ? (
+                                <div className="p-8 text-center text-slate-500 text-sm">
+                                    Nenhuma cotação encontrada para "{search}".
+                                </div>
+                            ) : (
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                            <th className="p-4 font-medium">Tipo</th>
+                                            <th className="p-4 font-medium">Cliente</th>
+                                            <th className="p-4 font-medium">Localização</th>
+                                            <th className="p-4 font-medium">Data</th>
+                                            <th className="p-4 font-medium">Valor Estimado</th>
+                                            <th className="p-4 font-medium"></th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 text-sm">
+                                        {filteredQuotes.map((quote) => (
+                                            <tr key={quote.id} className="hover:bg-slate-50 transition-colors">
+                                                <td className="p-4">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#006B6C]/10 text-[#006B6C]">
+                                                        {quote.type}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 font-medium text-slate-800">{quote.client}</td>
+                                                <td className="p-4 text-slate-500">{quote.location}</td>
+                                                <td className="p-4 text-slate-500">{quote.date}</td>
+                                                <td className="p-4 font-semibold text-slate-700">{quote.value}</td>
+                                                <td className="p-4 text-right">
+                                                    <button 
+                                                        onClick={() => showToast(`${quote.client} • ${quote.type} • ${quote.value} • ${quote.plans} plano(s)`, 'info')}
+                                                        className="text-[#006B6C] hover:underline text-sm font-medium"
+                                                    >
+                                                        Ver detalhes
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
                     </div>
                 </div>
             );
         }
 
-        function KpiCard({ title, value, subtitle, icon, color }) {
+        function KpiCard({ title, value, subtitle, icon, color, onClick }) {
             const colorMap = {
                 blue: 'bg-blue-50 text-blue-600',
                 orange: 'bg-orange-50 text-orange-600',
                 teal: 'bg-teal-50 text-teal-600',
             };
             return (
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorMap[color]}`}>
+                <button 
+                    onClick={onClick}
+                    className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 text-left hover:shadow-md hover:border-[#006B6C]/30 transition-all w-full"
+                >
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${colorMap[color]}`}>
                         {React.cloneElement(icon, { className: 'w-6 h-6' })}
                     </div>
                     <div>
@@ -305,7 +658,7 @@
                             <span className="text-xs text-slate-400">{subtitle}</span>
                         </div>
                     </div>
-                </div>
+                </button>
             );
         }
 
@@ -327,69 +680,142 @@
             );
         }
 
-        function TablesManagementView() {
+        // --- TABLES MANAGEMENT (CRUD COMPLETO) ---
+        function TablesManagementView({ plans, setPlans, showToast }) {
+            const [search, setSearch] = useState('');
+            const [editingPlan, setEditingPlan] = useState(null);
+            const [isNewPlan, setIsNewPlan] = useState(false);
+            const [deletingPlan, setDeletingPlan] = useState(null);
+            const fileInputRef = useRef(null);
+
+            const filtered = plans.filter(p =>
+                p.operator.toLowerCase().includes(search.toLowerCase()) ||
+                p.name.toLowerCase().includes(search.toLowerCase()) ||
+                p.accommodation.toLowerCase().includes(search.toLowerCase())
+            );
+
+            const handleSavePlan = (form) => {
+                if (editingPlan) {
+                    setPlans(prev => prev.map(p => p.id === editingPlan.id ? { ...form, id: editingPlan.id } : p));
+                    showToast(`Plano "${form.name}" atualizado com sucesso!`, 'success');
+                    setEditingPlan(null);
+                } else {
+                    const newPlan = { ...form, id: `p${Date.now()}` };
+                    setPlans(prev => [...prev, newPlan]);
+                    showToast(`Plano "${form.name}" adicionado com sucesso!`, 'success');
+                    setIsNewPlan(false);
+                }
+            };
+
+            const handleDeletePlan = () => {
+                if (deletingPlan) {
+                    setPlans(prev => prev.filter(p => p.id !== deletingPlan.id));
+                    showToast(`Plano "${deletingPlan.name}" excluído.`, 'success');
+                    setDeletingPlan(null);
+                }
+            };
+
+            const handleImportClick = () => fileInputRef.current?.click();
+
+            const handleImportFile = (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                    showToast(`Planilha "${file.name}" importada com sucesso! (${plans.length} planos atualizados)`, 'success');
+                    e.target.value = '';
+                }
+            };
+
             return (
                 <div className="p-8 max-w-7xl mx-auto space-y-8 animate-[fadeIn_0.3s_ease-in-out]">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
                         <div>
                             <h2 className="text-2xl font-bold text-slate-800">Gestão de Tabelas e Preços</h2>
                             <p className="text-slate-500 mt-1">Atualize os valores, importe planilhas de operadoras ou cadastre novos planos.</p>
                         </div>
                         <div className="flex gap-3">
-                            <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2">
+                            <button 
+                                onClick={() => setIsNewPlan(true)}
+                                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-semibold rounded-lg text-sm hover:bg-slate-50 transition-colors shadow-sm flex items-center gap-2"
+                            >
                                 <Plus className="w-4 h-4" />
                                 Novo Plano Manual
                             </button>
-                            <button className="px-4 py-2 bg-[#006B6C] text-white font-semibold rounded-lg text-sm hover:bg-teal-800 transition-colors shadow-sm flex items-center gap-2">
+                            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleImportFile} className="hidden" />
+                            <button 
+                                onClick={handleImportClick}
+                                className="px-4 py-2 bg-[#006B6C] text-white font-semibold rounded-lg text-sm hover:bg-teal-800 transition-colors shadow-sm flex items-center gap-2"
+                            >
                                 <Upload className="w-4 h-4" />
-                                Importar Planilha (Excel/CSV)
+                                Importar Planilha
                             </button>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-semibold text-slate-800">Tabelas Ativas no Sistema</h3>
+                        <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 flex-wrap gap-3">
+                            <h3 className="font-semibold text-slate-800">
+                                Tabelas Ativas <span className="text-slate-400 font-normal">({filtered.length} de {plans.length})</span>
+                            </h3>
                             <div className="flex gap-2">
                                 <input 
                                     type="text" 
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
                                     placeholder="Buscar operadora ou plano..." 
-                                    className="px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-[#006B6C] outline-none"
+                                    className="px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-[#006B6C] focus:border-[#006B6C] outline-none w-64"
                                 />
                             </div>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                                        <th className="p-4 font-medium">Operadora</th>
-                                        <th className="p-4 font-medium">Nome do Plano</th>
-                                        <th className="p-4 font-medium">Acomodação</th>
-                                        <th className="p-4 font-medium">Coparticipação</th>
-                                        <th className="p-4 font-medium">Última Atualização</th>
-                                        <th className="p-4 font-medium text-right">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 text-sm">
-                                    {MOCK_PLANS.map((plan) => (
-                                        <tr key={plan.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="p-4 font-semibold text-[#006B6C]">{plan.operator}</td>
-                                            <td className="p-4 font-medium text-slate-800">{plan.name}</td>
-                                            <td className="p-4 text-slate-500">{plan.accommodation}</td>
-                                            <td className="p-4 text-slate-500 truncate max-w-[150px]">{plan.copay}</td>
-                                            <td className="p-4 text-slate-500">Hoje, 08:30</td>
-                                            <td className="p-4 text-right flex justify-end gap-2">
-                                                <button className="p-1.5 text-slate-400 hover:text-[#006B6C] hover:bg-teal-50 rounded transition-colors" title="Editar Preços">
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Excluir Plano">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </td>
+                            {filtered.length === 0 ? (
+                                <div className="p-12 text-center text-slate-500 text-sm">
+                                    Nenhum plano encontrado para "{search}".
+                                </div>
+                            ) : (
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                            <th className="p-4 font-medium">Operadora</th>
+                                            <th className="p-4 font-medium">Nome do Plano</th>
+                                            <th className="p-4 font-medium">Acomodação</th>
+                                            <th className="p-4 font-medium">Coparticipação</th>
+                                            <th className="p-4 font-medium">Preço Base</th>
+                                            <th className="p-4 font-medium text-right">Ações</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 text-sm">
+                                        {filtered.map((plan) => (
+                                            <tr key={plan.id} className="hover:bg-slate-50 transition-colors">
+                                                <td className="p-4 font-semibold text-[#006B6C]">{plan.operator}</td>
+                                                <td className="p-4 font-medium text-slate-800">{plan.name}</td>
+                                                <td className="p-4 text-slate-500">{plan.accommodation}</td>
+                                                <td className="p-4 text-slate-500 truncate max-w-[180px]">{plan.copay}</td>
+                                                <td className="p-4 text-slate-700 font-medium">
+                                                    R$ {plan.prices['0-18'].toFixed(2)}
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <div className="flex justify-end gap-1">
+                                                        <button 
+                                                            onClick={() => setEditingPlan(plan)}
+                                                            className="p-1.5 text-slate-400 hover:text-[#006B6C] hover:bg-teal-50 rounded transition-colors" 
+                                                            title="Editar Preços"
+                                                        >
+                                                            <Edit className="w-4 h-4" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setDeletingPlan(plan)}
+                                                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" 
+                                                            title="Excluir Plano"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
                     </div>
                     
@@ -397,18 +823,43 @@
                         <Upload className="w-5 h-5 shrink-0 text-blue-600" />
                         <div>
                             <strong className="block mb-1">Como funciona a importação?</strong>
-                            Para atualizar em massa, clique em "Importar Planilha". O sistema lerá as colunas de Faixa Etária (ex: 0-18, 19-23) e atualizará automaticamente os preços no banco de dados para que reflitam imediatamente no motor de cotação.
+                            Para atualizar em massa, clique em "Importar Planilha". O sistema lerá as colunas de Faixa Etária (ex: 0-18, 19-23) e atualizará automaticamente os preços no banco de dados.
                         </div>
                     </div>
+
+                    {/* MODAIS */}
+                    {isNewPlan && (
+                        <PlanModal 
+                            plan={null}
+                            onSave={handleSavePlan}
+                            onClose={() => setIsNewPlan(false)}
+                        />
+                    )}
+                    {editingPlan && (
+                        <PlanModal 
+                            plan={editingPlan}
+                            onSave={handleSavePlan}
+                            onClose={() => setEditingPlan(null)}
+                        />
+                    )}
+                    {deletingPlan && (
+                        <ConfirmDialog 
+                            title="Excluir Plano"
+                            message={`Tem certeza que deseja excluir o plano "${deletingPlan.name}" da operadora ${deletingPlan.operator}? Esta ação não pode ser desfeita.`}
+                            onConfirm={handleDeletePlan}
+                            onClose={() => setDeletingPlan(null)}
+                            danger
+                        />
+                    )}
                 </div>
             );
         }
 
-        // --- WIZARD COMPONENT ---
-        function WizardView({ onCancel }) {
+        // --- WIZARD ---
+        function WizardView({ onCancel, initialType, plans, showToast }) {
             const [step, setStep] = useState(1);
             const [quoteData, setQuoteData] = useState({
-                type: '',
+                type: initialType || '',
                 clientName: '',
                 clientPhone: '',
                 clientEmail: '',
@@ -488,7 +939,14 @@
                                 />
                             )}
                             {step === 3 && <Step3Filters data={quoteData} updateData={updateData} />}
-                            {step === 4 && <Step4Compare data={quoteData} updateData={updateData} />}
+                            {step === 4 && (
+                                <Step4Compare 
+                                    data={quoteData} 
+                                    updateData={updateData} 
+                                    plans={plans}
+                                    showToast={showToast}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -708,27 +1166,21 @@
             );
         }
 
-        function Step4Compare({ data, updateData }) {
+        function Step4Compare({ data, updateData, plans, showToast }) {
             const [showLimitWarning, setShowLimitWarning] = useState(false);
-            // ✅ CORREÇÃO 4: ref para controlar o timeout
             const warningTimeoutRef = useRef(null);
 
-            const availablePlans = MOCK_PLANS.filter(plan => {
+            const availablePlans = plans.filter(plan => {
                 let accMatch = data.accommodation === 'Todas' || plan.accommodation === data.accommodation;
                 let copayMatch = false;
                 
-                if (data.copay === 'Todas') {
-                    copayMatch = true;
-                } else if (data.copay === 'Com Coparticipação') {
-                    copayMatch = plan.copay.includes('Com Coparticipação');
-                } else if (data.copay === 'Sem Coparticipação') {
-                    copayMatch = plan.copay === 'Sem Coparticipação';
-                }
+                if (data.copay === 'Todas') copayMatch = true;
+                else if (data.copay === 'Com Coparticipação') copayMatch = plan.copay.includes('Com Coparticipação');
+                else if (data.copay === 'Sem Coparticipação') copayMatch = plan.copay === 'Sem Coparticipação';
                 
                 return accMatch && copayMatch;
             });
 
-            // ✅ CORREÇÃO 3: usa apenas IDs válidos e limpa planos stale
             const togglePlanSelection = (planId) => {
                 const validSelected = data.selectedPlans.filter(id => availablePlans.some(p => p.id === id));
                 if (validSelected.includes(planId)) {
@@ -759,19 +1211,38 @@
                 return total;
             };
 
-            const handlePrint = () => {
-                window.print();
+            const handlePrint = () => window.print();
+
+            const handleSaveQuote = () => {
+                try {
+                    const saved = JSON.parse(localStorage.getItem('cotadorpro_quotes') || '[]');
+                    const quote = {
+                        ...data,
+                        plans: selectedPlanObjects,
+                        totalVidas,
+                        savedAt: new Date().toISOString(),
+                        id: Date.now()
+                    };
+                    saved.push(quote);
+                    localStorage.setItem('cotadorpro_quotes', JSON.stringify(saved));
+                    showToast('Cotação salva com sucesso!', 'success');
+                } catch (err) {
+                    showToast('Erro ao salvar cotação.', 'error');
+                }
             };
 
             return (
                 <div className="h-full flex flex-col animate-[fadeIn_0.3s_ease-in-out]">
-                    <div className="flex justify-between items-end mb-6 print:hidden">
+                    <div className="flex justify-between items-end mb-6 print:hidden flex-wrap gap-3">
                         <div>
                             <h2 className="text-2xl font-bold text-slate-800">Comparativo de Planos</h2>
                             <p className="text-slate-500 text-sm mt-1">Cliente: <span className="font-semibold text-slate-700">{data.clientName}</span> | {totalVidas} vida(s) | {data.city}/{data.state}</p>
                         </div>
                         <div className="flex gap-3">
-                            <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm font-medium">
+                            <button 
+                                onClick={handleSaveQuote}
+                                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm font-medium"
+                            >
                                 <Save className="w-4 h-4" />
                                 Salvar Cotação
                             </button>
@@ -821,49 +1292,53 @@
                                     <span className="text-orange-600 mt-0.5"><X className="w-4 h-4" /></span>
                                     <p className="text-sm text-orange-800">
                                         <strong className="block mb-0.5">Limite atingido</strong>
-                                        Você pode comparar no máximo 4 planos simultaneamente.
+                                        Máximo de 4 planos por comparativo.
                                     </p>
                                 </div>
                             )}
 
                             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                                {availablePlans.map(plan => {
-                                    const isSelected = data.selectedPlans.includes(plan.id);
-                                    const planTotal = calculateTotal(plan);
-                                    return (
-                                        <div 
-                                            key={plan.id}
-                                            onClick={() => togglePlanSelection(plan.id)}
-                                            className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                                isSelected 
-                                                    ? 'border-[#006B6C] bg-teal-50/30' 
-                                                    : 'border-slate-100 hover:border-slate-300 bg-white'
-                                            }`}
-                                        >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{plan.operator}</span>
-                                                    <h4 className="font-bold text-slate-800 leading-tight">{plan.name}</h4>
+                                {availablePlans.length === 0 ? (
+                                    <p className="text-sm text-slate-500 text-center py-8">Nenhum plano atende aos filtros.</p>
+                                ) : (
+                                    availablePlans.map(plan => {
+                                        const isSelected = data.selectedPlans.includes(plan.id);
+                                        const planTotal = calculateTotal(plan);
+                                        return (
+                                            <div 
+                                                key={plan.id}
+                                                onClick={() => togglePlanSelection(plan.id)}
+                                                className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                                    isSelected 
+                                                        ? 'border-[#006B6C] bg-teal-50/30' 
+                                                        : 'border-slate-100 hover:border-slate-300 bg-white'
+                                                }`}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{plan.operator}</span>
+                                                        <h4 className="font-bold text-slate-800 leading-tight">{plan.name}</h4>
+                                                    </div>
+                                                    <div className={`w-5 h-5 rounded border flex items-center justify-center mt-1 shrink-0 ${
+                                                        isSelected ? 'bg-[#006B6C] border-[#006B6C] text-white' : 'border-slate-300'
+                                                    }`}>
+                                                        {isSelected && <Check className="w-3.5 h-3.5" />}
+                                                    </div>
                                                 </div>
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center mt-1 shrink-0 ${
-                                                    isSelected ? 'bg-[#006B6C] border-[#006B6C] text-white' : 'border-slate-300'
-                                                }`}>
-                                                    {isSelected && <Check className="w-3.5 h-3.5" />}
+                                                <div className="flex gap-2 flex-wrap text-xs text-slate-600 mb-3">
+                                                    <span className="bg-slate-100 px-1.5 py-0.5 rounded">{plan.accommodation}</span>
+                                                    <span className="bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[120px]">{plan.copay}</span>
+                                                </div>
+                                                <div className="pt-2 border-t border-slate-100/50 flex justify-between items-center">
+                                                    <span className="text-xs text-slate-500">Total Mensal</span>
+                                                    <span className="font-bold text-[#006B6C]">
+                                                        R$ {planTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-2 flex-wrap text-xs text-slate-600 mb-3">
-                                                <span className="bg-slate-100 px-1.5 py-0.5 rounded">{plan.accommodation}</span>
-                                                <span className="bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[120px]">{plan.copay}</span>
-                                            </div>
-                                            <div className="pt-2 border-t border-slate-100/50 flex justify-between items-center">
-                                                <span className="text-xs text-slate-500">Total Mensal</span>
-                                                <span className="font-bold text-[#006B6C]">
-                                                    R$ {planTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
 
