@@ -13,10 +13,28 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Garantir que o background da impressão fique branco */
+
+        /* ✅ CORREÇÃO 1: Keyframes que faltavam para as animações Tailwind arbitrary */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ✅ CORREÇÃO 2: Impressão não corta conteúdo */
         @media print {
             body { background-color: white !important; }
-            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            html, body, #root { height: auto !important; overflow: visible !important; }
+            .h-screen { height: auto !important; }
+            .overflow-hidden, .overflow-auto { overflow: visible !important; }
         }
     </style>
 
@@ -32,7 +50,8 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
+        // ✅ CORREÇÃO 4: Adicionado useRef
+        const { useState, useMemo, useEffect, useRef } = React;
 
         // --- ÍCONES (Substituindo a biblioteca lucide-react para arquivo único) ---
         const Icon = ({ children, className = "w-5 h-5", ...props }) => (
@@ -107,11 +126,10 @@
 
         // --- MAIN COMPONENT ---
         function CotadorApp() {
-            const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'wizard', or 'tables'
+            const [currentView, setCurrentView] = useState('dashboard');
 
             return (
                 <div className="flex h-screen bg-[#F8FAFC] text-slate-800 overflow-hidden">
-                    {/* Sidebar - Hidden on print */}
                     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between print:hidden shrink-0">
                         <div>
                             <div className="p-6">
@@ -149,9 +167,7 @@
                         </div>
                     </aside>
 
-                    {/* Main Content Area */}
                     <main className="flex-1 flex flex-col overflow-hidden">
-                        {/* Header - Hidden on print */}
                         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 print:hidden shrink-0">
                             <div className="flex-1 max-w-xl">
                                 <div className="relative">
@@ -174,7 +190,6 @@
                             </div>
                         </header>
 
-                        {/* Scrollable Content */}
                         <div className="flex-1 overflow-auto">
                             {currentView === 'dashboard' && <DashboardView onStartQuote={() => setCurrentView('wizard')} />}
                             {currentView === 'wizard' && <WizardView onCancel={() => setCurrentView('dashboard')} />}
@@ -212,14 +227,12 @@
                         </div>
                     </div>
 
-                    {/* KPIs */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <KpiCard title="Tarefas Hoje" value="12" subtitle="3 pendentes" icon={<CheckCircle2 />} color="blue" />
                         <KpiCard title="Oportunidades CRM" value="8" subtitle="Novos leads" icon={<Users />} color="orange" />
                         <KpiCard title="Cotações Efetuadas" value="4" subtitle="Hoje" icon={<FileText />} color="teal" />
                     </div>
 
-                    {/* Quick Access */}
                     <div>
                         <h3 className="text-lg font-semibold text-slate-800 mb-4">Acesso Rápido</h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -232,7 +245,6 @@
                         </div>
                     </div>
 
-                    {/* Recent Table */}
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                         <div className="p-5 border-b border-slate-200 flex justify-between items-center">
                             <h3 className="font-semibold text-slate-800">Últimas Cotações</h3>
@@ -656,7 +668,7 @@
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-4 p-6 bg-slate-50 rounded-xl border border-slate-200">
                             <h4 className="font-semibold text-slate-800">Acomodação</h4>
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 flex-wrap">
                                 {['Todas', 'Enfermaria', 'Apartamento'].map(opt => (
                                     <label key={opt} className="flex items-center gap-2 cursor-pointer">
                                         <input 
@@ -675,7 +687,7 @@
 
                         <div className="space-y-4 p-6 bg-slate-50 rounded-xl border border-slate-200">
                             <h4 className="font-semibold text-slate-800">Coparticipação</h4>
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 flex-wrap">
                                 {['Todas', 'Com Coparticipação', 'Sem Coparticipação'].map(opt => (
                                     <label key={opt} className="flex items-center gap-2 cursor-pointer">
                                         <input 
@@ -698,8 +710,9 @@
 
         function Step4Compare({ data, updateData }) {
             const [showLimitWarning, setShowLimitWarning] = useState(false);
+            // ✅ CORREÇÃO 4: ref para controlar o timeout
+            const warningTimeoutRef = useRef(null);
 
-            // Filter logic improved
             const availablePlans = MOCK_PLANS.filter(plan => {
                 let accMatch = data.accommodation === 'Todas' || plan.accommodation === data.accommodation;
                 let copayMatch = false;
@@ -707,7 +720,6 @@
                 if (data.copay === 'Todas') {
                     copayMatch = true;
                 } else if (data.copay === 'Com Coparticipação') {
-                    // Trás tudo que tem "Com Coparticipação" no nome (Parcial, Total, etc)
                     copayMatch = plan.copay.includes('Com Coparticipação');
                 } else if (data.copay === 'Sem Coparticipação') {
                     copayMatch = plan.copay === 'Sem Coparticipação';
@@ -716,22 +728,26 @@
                 return accMatch && copayMatch;
             });
 
+            // ✅ CORREÇÃO 3: usa apenas IDs válidos e limpa planos stale
             const togglePlanSelection = (planId) => {
-                const current = data.selectedPlans;
-                if (current.includes(planId)) {
-                    updateData('selectedPlans', current.filter(id => id !== planId));
+                const validSelected = data.selectedPlans.filter(id => availablePlans.some(p => p.id === id));
+                if (validSelected.includes(planId)) {
+                    updateData('selectedPlans', validSelected.filter(id => id !== planId));
                     setShowLimitWarning(false);
                 } else {
-                    if (current.length >= 4) {
+                    if (validSelected.length >= 4) {
                         setShowLimitWarning(true);
-                        setTimeout(() => setShowLimitWarning(false), 3000); // Esconde sozinho
+                        if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+                        warningTimeoutRef.current = setTimeout(() => setShowLimitWarning(false), 3000);
                         return;
                     }
-                    updateData('selectedPlans', [...current, planId]);
+                    updateData('selectedPlans', [...validSelected, planId]);
                 }
             };
 
-            const selectedPlanObjects = data.selectedPlans.map(id => availablePlans.find(p => p.id === id)).filter(Boolean);
+            const selectedPlanObjects = data.selectedPlans
+                .map(id => availablePlans.find(p => p.id === id))
+                .filter(Boolean);
             const totalVidas = Object.values(data.ages).reduce((a, b) => a + b, 0);
             const activeAgeBrackets = AGE_BRACKETS.filter(bracket => data.ages[bracket] > 0);
 
@@ -749,7 +765,6 @@
 
             return (
                 <div className="h-full flex flex-col animate-[fadeIn_0.3s_ease-in-out]">
-                    {/* Header Actions - Hidden on print */}
                     <div className="flex justify-between items-end mb-6 print:hidden">
                         <div>
                             <h2 className="text-2xl font-bold text-slate-800">Comparativo de Planos</h2>
@@ -771,7 +786,6 @@
                         </div>
                     </div>
 
-                    {/* Print Only Header */}
                     <div className="hidden print:block mb-8 border-b-2 border-[#006B6C] pb-4">
                         <div className="flex justify-between items-center">
                             <h1 className="text-3xl font-bold text-[#006B6C] flex items-center gap-2">
@@ -786,7 +800,7 @@
                         </div>
                         <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
                             <h2 className="text-xl font-bold text-slate-800 mb-2">Dados do Cliente</h2>
-                            <div className="flex gap-8 text-sm">
+                            <div className="flex gap-8 text-sm flex-wrap">
                                 <p><strong>Nome:</strong> {data.clientName || 'Não informado'}</p>
                                 <p><strong>Modalidade:</strong> {data.type}</p>
                                 <p><strong>Localidade:</strong> {data.city}/{data.state}</p>
@@ -796,14 +810,12 @@
                     </div>
 
                     <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
-                        {/* Left Panel: Plan Selection - Hidden on Print */}
                         <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden shadow-sm print:hidden">
                             <div className="p-4 bg-slate-50 border-b border-slate-200 relative">
                                 <h3 className="font-bold text-slate-800">Planos Disponíveis</h3>
                                 <p className="text-xs text-slate-500 mt-1">{availablePlans.length} encontrados</p>
                             </div>
                             
-                            {/* ALERTA DE LIMITE (Sem alert nativo) */}
                             {showLimitWarning && (
                                 <div className="mx-4 mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-start gap-2 animate-[slideIn_0.2s_ease-out]">
                                     <span className="text-orange-600 mt-0.5"><X className="w-4 h-4" /></span>
@@ -855,7 +867,6 @@
                             </div>
                         </div>
 
-                        {/* Right Panel: Comparison Matrix */}
                         <div className="lg:col-span-3 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col print:col-span-4 print:border-none print:shadow-none">
                             {selectedPlanObjects.length === 0 ? (
                                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center print:hidden">
@@ -967,7 +978,6 @@
             );
         }
 
-        // Renderiza a aplicação no DOM
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<CotadorApp />);
     </script>
